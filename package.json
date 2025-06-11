@@ -1,7 +1,6 @@
 {
   "name": "kids-learning-app",
   "version": "0.1.0",
-  "homepage": "https://NikitaSharma22.github.io/kids-learning-app",
   "private": true,
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
