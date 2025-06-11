@@ -1,12 +1,11 @@
-import React, { useState, useMemo} from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Confetti from 'react-confetti';
 import { Sparkles, Star, Palette, Home, CheckCircle, XCircle, ArrowRight, Volume2, VolumeX } from 'lucide-react';
 import { quizData, getQuizQuestions } from './quizData';
-import { coloringPages} from './coloringPages';
+import { coloringPages, BLANK_COLOR } from './coloringPages';
 import useSound from 'use-sound';
 
-// --- CHANGED: Importing local audio files ---
-// Make sure you have these files in a 'src/sounds/' folder
+// Sound file URLs (You can change these anytime!)
 import correctSound from './sounds/correct.mp3';
 import wrongSound from './sounds/wrong.mp3';
 import winSound from './sounds/win.mp3';
@@ -20,7 +19,6 @@ const QUESTIONS_PER_QUIZ = 5;
 
 // --- Background Music Component ---
 function BackgroundMusic() {
-    // --- CHANGED: Using imported music file ---
     const [play, { stop }] = useSound(backgroundMusic, {
         loop: true,
         volume: 0.3,
@@ -154,7 +152,6 @@ function MainMenu({ onSelectCategory, correctAnswersCount }) {
 function Quiz({ category, onQuizComplete, onExit }) {
   const questions = useMemo(() => getQuizQuestions(category, QUESTIONS_PER_QUIZ), [category]);
 
-  // --- CHANGED: Using imported sound files ---
   const [playCorrectSound] = useSound(correctSound, { volume: 0.5 });
   const [playWrongSound] = useSound(wrongSound, { volume: 0.5 });
   const [playWinSound] = useSound(winSound, { volume: 0.6 });
@@ -275,9 +272,33 @@ function Quiz({ category, onQuizComplete, onExit }) {
 }
 
 
-// --- Coloring Page Component ---
+// --- Coloring Page Component (UPDATED with new colors and button) ---
 function ColoringPage({ onExit, PageSVG, initialFills }) {
-  const colors = ['#FF6347', '#FFD700', '#ADFF2F', '#40E0D0', '#1E90FF', '#DA70D6', '#8B4513', '#228B22', '#87CEEB', '#FFFFFF', '#C0C0C0', '#2F4F4F', '#FFC0CB', '#FFA500', '#9400D3', '#000000'];
+  // --- CHANGED: Expanded color palette to 20 colors ---
+  const colors = [
+    // Rainbow Colors
+    '#FF0000', // Red
+    '#FFA500', // Orange
+    '#FFFF00', // Yellow
+    '#008000', // Green
+    '#0000FF', // Blue
+    '#4B0082', // Indigo
+    '#EE82EE', // Violet
+    // Other Fun Colors
+    '#FFC0CB', // Pink
+    '#A52A2A', // Brown
+    '#000000', // Black
+    '#FFFFFF', // White
+    '#808080', // Gray
+    '#87CEEB', // Sky Blue
+    '#32CD32', // Lime Green
+    '#9400D3', // Dark Violet
+    '#008080', // Teal
+    '#FFD700', // Gold
+    '#FF4500', // OrangeRed
+    '#2F4F4F', // Dark Slate Gray
+    '#40E0D0', // Turquoise
+  ];
   const [selectedColor, setSelectedColor] = useState('#87CEEB');
   const [fills, setFills] = useState(initialFills);
 
@@ -292,11 +313,12 @@ function ColoringPage({ onExit, PageSVG, initialFills }) {
           <Palette className="w-8 h-8 text-pink-500" />
           <h1 className="text-2xl md:text-3xl font-bold ml-3 text-pink-800">Coloring Surprise!</h1>
         </div>
+        {/* The little home button is still here if they want it! */}
         <button onClick={onExit} className="p-2 rounded-full hover:bg-pink-100 transition">
           <Home className="w-6 h-6 text-pink-600"/>
         </button>
       </div>
-      <p className="text-slate-600 mb-4">You collected {REWARD_THRESHOLD} stars! Pick a color, then tap the picture to paint.</p>
+      <p className="text-slate-600 mb-4">You did it! Pick a color, then tap the picture to paint.</p>
       
       <div className="flex justify-center flex-wrap items-center gap-2 mb-4 p-3 bg-slate-100 rounded-lg">
         {colors.map(color => (
@@ -309,9 +331,19 @@ function ColoringPage({ onExit, PageSVG, initialFills }) {
       <div className="w-full max-w-2xl mx-auto aspect-[4/3] bg-white p-2 rounded-xl border-2 border-slate-200 shadow-inner cursor-pointer">
         <PageSVG f={fills} o={handlePathClick} />
       </div>
-       <button onClick={() => setFills(initialFills)} className="mt-4 bg-slate-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-700 transition-colors">
-            Reset Painting
-        </button>
+       <div className="mt-6 flex justify-center items-center gap-4">
+            <button onClick={() => setFills(initialFills)} className="bg-slate-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-slate-700 transition-colors">
+                Reset Painting
+            </button>
+            {/* --- NEW: "Next Challenge" Button --- */}
+            <button 
+                onClick={onExit} 
+                className="bg-teal-500 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-teal-600 transition-all transform hover:scale-105 flex items-center"
+            >
+                Start a New Challenge!
+                <Sparkles className="ml-2 w-5 h-5" />
+            </button>
+       </div>
     </div>
   );
 }
