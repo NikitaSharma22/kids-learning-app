@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo} from 'react';
 import Confetti from 'react-confetti';
 import { Sparkles, Star, Palette, Home, CheckCircle, XCircle, ArrowRight, Volume2, VolumeX } from 'lucide-react';
 import { quizData, getQuizQuestions } from './quizData';
-import { coloringPages, BLANK_COLOR } from './coloringPages';
+import { coloringPages} from './coloringPages';
 import useSound from 'use-sound';
 
 // --- CHANGED: Importing local audio files ---
