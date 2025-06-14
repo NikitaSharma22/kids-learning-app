@@ -15,7 +15,7 @@ import backgroundMusic from './sounds/music.mp3';
 const categories = Object.keys(quizData);
 const REWARD_THRESHOLD = 5;
 const QUESTIONS_PER_QUIZ = 5;
-const QUIZ_DURATION_SECONDS = 150; // You can easily change this value (in seconds)
+const QUIZ_DURATION_SECONDS = 30; // You can easily change this value (in seconds)
 
 // Helper function for Text-to-Speech
 const speak = (text) => {
