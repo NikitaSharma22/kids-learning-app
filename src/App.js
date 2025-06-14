@@ -16,7 +16,7 @@ import backgroundMusic from './sounds/music.mp3';
 const categories = Object.keys(quizData);
 const REWARD_THRESHOLD = 5;
 const QUESTIONS_PER_QUIZ = 5;
-const QUIZ_DURATION_SECONDS = 150; // 2 minutes and 30 seconds
+const QUIZ_DURATION_SECONDS = 60; // 2 minutes and 30 seconds
 
 
 // --- Background Music Component ---
