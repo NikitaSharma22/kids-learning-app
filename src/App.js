@@ -1,32 +1,30 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Confetti from 'react-confetti';
-import { Sparkles, Star, Palette, Home, CheckCircle, XCircle, ArrowRight, Volume2, VolumeX, Clock, Mic, BookOpen } from 'lucide-react';
+import { Sparkles, Star, Palette, Home, CheckCircle, XCircle, ArrowRight, Volume2, VolumeX, Clock, Mic } from 'lucide-react';
 import { quizData, getQuizQuestions } from './quizData';
 import { coloringPages } from './coloringPages';
-import { allStickers } from './stickerData';
 import useSound from 'use-sound';
 
-// --- Sound File Imports ---
-// Make sure you have a 'sounds' folder inside your 'src' folder for this to work.
+// Local sound file imports
 import correctSound from './sounds/correct.mp3';
 import wrongSound from './sounds/wrong.mp3';
 import winSound from './sounds/win.mp3';
 import backgroundMusic from './sounds/music.mp3';
 
-// --- App Constants ---
+// App Constants
 const categories = Object.keys(quizData);
 const REWARD_THRESHOLD = 5;
 const QUESTIONS_PER_QUIZ = 5;
-const QUIZ_DURATION_SECONDS = 30; // 2 minutes and 30 seconds
+const QUIZ_DURATION_SECONDS = 150; // You can easily change this value (in seconds)
 
-// --- Helper function for Text-to-Speech ---
+// Helper function for Text-to-Speech
 const speak = (text) => {
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   window.speechSynthesis.speak(utterance);
 };
 
-// --- Background Music Component ---
+// Background Music Component
 function BackgroundMusic() {
     const [play, { stop }] = useSound(backgroundMusic, { loop: true, volume: 0.3 });
     const [isMusicOn, setIsMusicOn] = useState(false);
@@ -47,22 +45,12 @@ function BackgroundMusic() {
     );
 }
 
-// --- Main App Component ---
+// Main App Component
 export default function App() {
   const [currentPage, setCurrentPage] = useState('menu');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [correctAnswersTotal, setCorrectAnswersTotal] = useState(0); 
   const [coloringPageData, setColoringPageData] = useState(null);
-  const [unlockedStickers, setUnlockedStickers] = useState(() => {
-    // Load saved stickers from localStorage when the app starts
-    const savedStickers = localStorage.getItem('my-stickers');
-    return savedStickers ? JSON.parse(savedStickers) : [];
-  });
-
-  // Save stickers to localStorage whenever the collection changes
-  useEffect(() => {
-    localStorage.setItem('my-stickers', JSON.stringify(unlockedStickers));
-  }, [unlockedStickers]);
 
   const handleSelectCategory = (category) => {
     setSelectedCategory(category);
@@ -73,21 +61,9 @@ export default function App() {
     const newTotal = correctAnswersTotal + correctCountInSession;
 
     if (newTotal >= REWARD_THRESHOLD) {
-      // Find stickers the user doesn't have yet
-      const newStickersToAward = allStickers.filter(
-        sticker => !unlockedStickers.find(unlocked => unlocked.id === sticker.id)
-      );
-      
-      // Shuffle and pick 2 new stickers to award
-      const shuffledNewStickers = newStickersToAward.sort(() => 0.5 - Math.random());
-      const selectedStickers = shuffledNewStickers.slice(0, 2);
-      setUnlockedStickers(prev => [...prev, ...selectedStickers]);
-      
-      // Give the coloring page reward
       const randomIndex = Math.floor(Math.random() * coloringPages.length);
       setColoringPageData(coloringPages[randomIndex]);
       setCurrentPage('coloring');
-      
       setCorrectAnswersTotal(0); 
     } else {
       setCorrectAnswersTotal(newTotal);
@@ -99,10 +75,6 @@ export default function App() {
     setCurrentPage('menu');
     setSelectedCategory(null);
   };
-  
-  const navigateToStickerBook = () => {
-      setCurrentPage('stickerBook');
-  };
 
   const PageToRender = () => {
     switch (currentPage) {
@@ -113,11 +85,9 @@ export default function App() {
           const PageComponent = coloringPageData.component;
           return <ColoringPage onExit={navigateHome} PageSVG={PageComponent} initialFills={coloringPageData.initialFills} />;
         }
-        return <MainMenu onSelectCategory={handleSelectCategory} onNavigateToStickerBook={navigateToStickerBook} correctAnswersCount={correctAnswersTotal} />;
-      case 'stickerBook':
-        return <StickerBook unlockedStickers={unlockedStickers} onExit={navigateHome} />;
+        return <MainMenu onSelectCategory={handleSelectCategory} correctAnswersCount={correctAnswersTotal} />;
       default:
-        return <MainMenu onSelectCategory={handleSelectCategory} onNavigateToStickerBook={navigateToStickerBook} correctAnswersCount={correctAnswersTotal} />;
+        return <MainMenu onSelectCategory={handleSelectCategory} correctAnswersCount={correctAnswersTotal} />;
     }
   };
 
@@ -131,15 +101,15 @@ export default function App() {
   );
 }
 
-// --- Menu Component ---
-function MainMenu({ onSelectCategory, onNavigateToStickerBook, correctAnswersCount }) {
+// Menu Component
+function MainMenu({ onSelectCategory, correctAnswersCount }) {
   return (
     <div className="text-center animate-fade-in">
       <div className="flex justify-center items-center mb-4">
         <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500" />
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold ml-4 text-amber-900">Fun Learning Games!</h1>
       </div>
-      <p className="text-slate-600 mb-6 text-base sm:text-lg">Collect stars to win prizes!</p>
+      <p className="text-slate-600 mb-6 text-base sm:text-lg">Collect stars to win a coloring surprise!</p>
       
       {correctAnswersCount > 0 && (
           <div className="mb-6 p-4 bg-yellow-100 border-2 border-dashed border-yellow-400 rounded-lg max-w-md mx-auto animate-fade-in">
@@ -155,10 +125,9 @@ function MainMenu({ onSelectCategory, onNavigateToStickerBook, correctAnswersCou
 
       <div className="mb-8 p-4 bg-amber-50 border-2 border-dashed border-amber-300 rounded-lg max-w-md mx-auto">
         <p className="font-semibold text-lg sm:text-xl text-amber-800">Your Goal</p>
-        <p className="text-sm sm:text-base text-slate-500 mt-1">Collect <strong>{REWARD_THRESHOLD} stars</strong> to unlock a coloring surprise and new stickers!</p>
+        <p className="text-sm sm:text-base text-slate-500 mt-1">Collect <strong>{REWARD_THRESHOLD} stars</strong> to unlock a coloring surprise!</p>
       </div>
 
-      <h2 className="text-2xl font-bold text-amber-800 mb-4">Quiz Games</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {categories.map((category) => (
           <button
@@ -170,23 +139,11 @@ function MainMenu({ onSelectCategory, onNavigateToStickerBook, correctAnswersCou
           </button>
         ))}
       </div>
-      
-      <div className="mt-8 pt-6 border-t-2 border-dashed border-amber-200">
-        <h2 className="text-2xl font-bold text-amber-800 mb-4">My Collection</h2>
-         <button
-            onClick={onNavigateToStickerBook}
-            className="p-4 w-full max-w-xs mx-auto flex items-center justify-center bg-orange-500 text-white rounded-xl shadow-md hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-transform transform hover:scale-105"
-          >
-            <BookOpen className="mr-3 w-7 h-7" />
-            <span className="font-bold text-xl text-center">Sticker Book</span>
-          </button>
-      </div>
     </div>
   );
 }
 
-
-// --- Quiz Component ---
+// Quiz Component
 function Quiz({ category, onQuizComplete, onExit }) {
   const questions = useMemo(() => getQuizQuestions(category, QUESTIONS_PER_QUIZ), [category]);
 
@@ -335,8 +292,7 @@ function Quiz({ category, onQuizComplete, onExit }) {
   );
 }
 
-
-// --- Coloring Page Component ---
+// Coloring Page Component
 function ColoringPage({ onExit, PageSVG, initialFills }) {
   const colors = [
     '#FF3B30', '#FF9500', '#FFCC00', '#34C759', '#007AFF', '#5856D6', '#AF52DE', '#FF2D55', '#5AC8FA', '#B5E61D',
@@ -385,53 +341,6 @@ function ColoringPage({ onExit, PageSVG, initialFills }) {
                 <Sparkles className="ml-2 w-5 h-5" />
             </button>
        </div>
-    </div>
-  );
-}
-
-// --- Sticker Book Component ---
-function StickerBook({ unlockedStickers, onExit }) {
-  const hasStickers = unlockedStickers && unlockedStickers.length > 0;
-
-  return (
-    <div className="text-center animate-fade-in">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center">
-          <BookOpen className="w-8 h-8 text-orange-500" />
-          <h1 className="text-2xl md:text-3xl font-bold ml-3 text-orange-800">My Sticker Book</h1>
-        </div>
-        <button onClick={onExit} className="p-2 rounded-full hover:bg-orange-100 transition">
-          <Home className="w-6 h-6 text-orange-600"/>
-        </button>
-      </div>
-
-      <p className="text-slate-600 mb-6">Here are all the amazing stickers you've collected. Keep playing to earn more!</p>
-
-      <div className="p-4 bg-amber-50 border-2 border-dashed border-amber-300 rounded-lg min-h-[300px]">
-        {hasStickers ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-            {unlockedStickers.map(sticker => (
-              <div key={sticker.id} className="p-2 bg-white rounded-lg shadow-sm flex flex-col items-center animate-fade-in">
-                <img src={sticker.image} alt={sticker.name} className="w-20 h-20 object-contain" />
-                <p className="text-xs mt-2 font-semibold text-slate-700">{sticker.name}</p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full pt-10">
-            <Star className="w-16 h-16 text-slate-300 mb-4" />
-            <p className="font-bold text-slate-500">Your sticker book is empty!</p>
-            <p className="text-sm text-slate-400">Play some quizzes to earn your first sticker.</p>
-          </div>
-        )}
-      </div>
-      
-       <button 
-          onClick={onExit} 
-          className="mt-6 bg-teal-500 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-teal-600 transition-all transform hover:scale-105 flex items-center mx-auto"
-      >
-          Find More Games
-      </button>
     </div>
   );
 }
