@@ -1,12 +1,12 @@
-import React, { useState, useMemo, useEffect } from 'react'; // --- CHANGED: Added useEffect
+import React, { useState, useMemo, useEffect } from 'react';
 import Confetti from 'react-confetti';
-// --- CHANGED: Added Clock icon ---
-import { Sparkles, Star, Palette, Home, CheckCircle, XCircle, ArrowRight, Volume2, VolumeX, Clock } from 'lucide-react';
+// --- CHANGED: Added Mic icon for the new button ---
+import { Sparkles, Star, Palette, Home, CheckCircle, XCircle, ArrowRight, Volume2, VolumeX, Clock, Mic } from 'lucide-react';
 import { quizData, getQuizQuestions } from './quizData';
 import { coloringPages } from './coloringPages';
 import useSound from 'use-sound';
 
-// Sound file URLs (or local imports)
+// Sound file imports
 import correctSound from './sounds/correct.mp3';
 import wrongSound from './sounds/wrong.mp3';
 import winSound from './sounds/win.mp3';
@@ -16,42 +16,44 @@ import backgroundMusic from './sounds/music.mp3';
 const categories = Object.keys(quizData);
 const REWARD_THRESHOLD = 5;
 const QUESTIONS_PER_QUIZ = 5;
-const QUIZ_DURATION_SECONDS = 60; // 2 minutes and 30 seconds
+const QUIZ_DURATION_SECONDS = 150;
+
+// --- NEW: Helper function for Text-to-Speech ---
+const speak = (text) => {
+  // Stop any previous speech before starting a new one
+  window.speechSynthesis.cancel();
+  
+  const utterance = new SpeechSynthesisUtterance(text);
+  // You can optionally set voice, rate, pitch here if you want
+  // For example: utterance.lang = 'en-US';
+  window.speechSynthesis.speak(utterance);
+};
 
 
 // --- Background Music Component ---
 function BackgroundMusic() {
-    const [play, { stop }] = useSound(backgroundMusic, {
-        loop: true,
-        volume: 0.3,
-    });
+    const [play, { stop }] = useSound(backgroundMusic, { loop: true, volume: 0.3 });
     const [isMusicOn, setIsMusicOn] = useState(false);
 
     const toggleMusic = () => {
-        if (isMusicOn) {
-            stop();
-        } else {
-            play();
-        }
+        if (isMusicOn) { stop(); } else { play(); }
         setIsMusicOn(!isMusicOn);
     };
 
     return (
         <button 
             onClick={toggleMusic} 
-            className="fixed bottom-4 right-4 bg-white p-3 rounded-full shadow-lg border-2 border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400"
-            aria-label={isMusicOn ? "Mute background music" : "Play background music"}
+            className="fixed bottom-4 right-4 bg-white p-3 rounded-full shadow-lg border-2 border-amber-200"
+            aria-label={isMusicOn ? "Mute music" : "Play music"}
         >
-            {isMusicOn 
-                ? <Volume2 className="w-6 h-6 text-amber-600 animate-pulse" /> 
-                : <VolumeX className="w-6 h-6 text-amber-600" />
-            }
+            {isMusicOn ? <Volume2 className="w-6 h-6 text-amber-600 animate-pulse" /> : <VolumeX className="w-6 h-6 text-amber-600" />}
         </button>
     );
 }
 
-// --- Main App Component ---
+// --- Main App Component (No changes needed here) ---
 export default function App() {
+  // ... (all the existing state and functions in App component remain the same) ...
   const [currentPage, setCurrentPage] = useState('menu');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [correctAnswersTotal, setCorrectAnswersTotal] = useState(0); 
@@ -107,8 +109,9 @@ export default function App() {
   );
 }
 
-// --- Menu Component ---
+// --- Menu Component (No changes needed here) ---
 function MainMenu({ onSelectCategory, correctAnswersCount }) {
+  // ... (This component is perfect as is) ...
   return (
     <div className="text-center animate-fade-in">
       <div className="flex justify-center items-center mb-4">
@@ -150,7 +153,7 @@ function MainMenu({ onSelectCategory, correctAnswersCount }) {
 }
 
 
-// --- Quiz Component (UPDATED with Timer)---
+// --- Quiz Component (UPDATED with "Read to Me" button) ---
 function Quiz({ category, onQuizComplete, onExit }) {
   const questions = useMemo(() => getQuizQuestions(category, QUESTIONS_PER_QUIZ), [category]);
 
@@ -163,25 +166,14 @@ function Quiz({ category, onQuizComplete, onExit }) {
   const [feedback, setFeedback] = useState(null);
   const [correctInSession, setCorrectInSession] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
-  
-  // --- NEW: State for the timer ---
   const [timeLeft, setTimeLeft] = useState(QUIZ_DURATION_SECONDS);
 
-  // --- NEW: useEffect to handle the countdown timer ---
   useEffect(() => {
-    // If time is up or quiz is showing feedback, don't run the timer
     if (timeLeft === 0 || feedback) return;
-
-    // Set up the interval
-    const intervalId = setInterval(() => {
-      setTimeLeft(prevTime => prevTime - 1);
-    }, 1000);
-
-    // Clean up the interval when the component unmounts or dependencies change
+    const intervalId = setInterval(() => setTimeLeft(prevTime => prevTime - 1), 1000);
     return () => clearInterval(intervalId);
   }, [timeLeft, feedback]); 
 
-  // --- NEW: useEffect to handle when time runs out ---
   useEffect(() => {
     if (timeLeft === 0) {
       onQuizComplete(correctInSession);
@@ -218,7 +210,6 @@ function Quiz({ category, onQuizComplete, onExit }) {
     }
   };
   
-  // --- NEW: Logic to format time for display ---
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   const timerColor = timeLeft <= 15 ? 'text-red-500 animate-pulse' : 'text-slate-600';
@@ -240,7 +231,6 @@ function Quiz({ category, onQuizComplete, onExit }) {
       </div>
 
       <div className="flex items-center justify-between bg-slate-100 p-4 rounded-lg mb-4">
-        {/* --- NEW: Timer Display --- */}
         <div className={`flex items-center font-bold text-lg ${timerColor}`}>
             <Clock className="mr-2 w-6 h-6"/>
             <span>{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</span>
@@ -252,7 +242,13 @@ function Quiz({ category, onQuizComplete, onExit }) {
         </div>
       </div>
        
-      <p className="text-lg md:text-2xl font-semibold mb-4 text-slate-800">{currentQuestion.question}</p>
+      {/* --- CHANGED: Question now has a "Read to Me" button --- */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-lg md:text-2xl font-semibold text-slate-800">{currentQuestion.question}</p>
+        <button onClick={() => speak(currentQuestion.question)} className="p-2 rounded-full hover:bg-sky-100 transition">
+            <Mic className="w-6 h-6 text-sky-500"/>
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {currentQuestion.options.map((option) => {
@@ -282,9 +278,17 @@ function Quiz({ category, onQuizComplete, onExit }) {
             <p className="text-2xl font-bold text-red-600 flex items-center justify-center"><XCircle className="mr-2"/> Oops! The answer is {currentQuestion.answer}</p>
           }
           
+          {/* --- CHANGED: Explanation now has a "Read to Me" button --- */}
           <div className="mt-4 p-4 bg-sky-100 border-l-4 border-sky-500 text-sky-800 rounded-lg text-left max-w-2xl mx-auto">
-            <p className="font-bold">Here's a fun fact:</p>
-            <p className="mt-1">{currentQuestion.explanation}</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="font-bold">Here's a fun fact:</p>
+                <p className="mt-1">{currentQuestion.explanation}</p>
+              </div>
+              <button onClick={() => speak(currentQuestion.explanation)} className="p-2 ml-2 rounded-full hover:bg-sky-200 transition flex-shrink-0">
+                  <Mic className="w-5 h-5 text-sky-600"/>
+              </button>
+            </div>
           </div>
 
           <button
