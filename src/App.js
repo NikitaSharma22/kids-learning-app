@@ -1,34 +1,30 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Confetti from 'react-confetti';
-// --- CHANGED: Added Mic icon for the new button ---
-import { Sparkles, Star, Palette, Home, CheckCircle, XCircle, ArrowRight, Volume2, VolumeX, Clock, Mic } from 'lucide-react';
+import { Sparkles, Star, Palette, Home, CheckCircle, XCircle, ArrowRight, Volume2, VolumeX, Clock, Mic, BookOpen } from 'lucide-react';
 import { quizData, getQuizQuestions } from './quizData';
 import { coloringPages } from './coloringPages';
+import { allStickers } from './stickerData';
 import useSound from 'use-sound';
 
-// Sound file imports
+// --- Sound File Imports ---
+// Make sure you have a 'sounds' folder inside your 'src' folder for this to work.
 import correctSound from './sounds/correct.mp3';
 import wrongSound from './sounds/wrong.mp3';
 import winSound from './sounds/win.mp3';
 import backgroundMusic from './sounds/music.mp3';
 
-
+// --- App Constants ---
 const categories = Object.keys(quizData);
 const REWARD_THRESHOLD = 5;
 const QUESTIONS_PER_QUIZ = 5;
-const QUIZ_DURATION_SECONDS = 30;
+const QUIZ_DURATION_SECONDS = 150; // 2 minutes and 30 seconds
 
-// --- NEW: Helper function for Text-to-Speech ---
+// --- Helper function for Text-to-Speech ---
 const speak = (text) => {
-  // Stop any previous speech before starting a new one
   window.speechSynthesis.cancel();
-  
   const utterance = new SpeechSynthesisUtterance(text);
-  // You can optionally set voice, rate, pitch here if you want
-  // For example: utterance.lang = 'en-US';
   window.speechSynthesis.speak(utterance);
 };
-
 
 // --- Background Music Component ---
 function BackgroundMusic() {
@@ -43,7 +39,7 @@ function BackgroundMusic() {
     return (
         <button 
             onClick={toggleMusic} 
-            className="fixed bottom-4 right-4 bg-white p-3 rounded-full shadow-lg border-2 border-amber-200"
+            className="fixed bottom-4 right-4 bg-white p-3 rounded-full shadow-lg border-2 border-amber-200 z-50"
             aria-label={isMusicOn ? "Mute music" : "Play music"}
         >
             {isMusicOn ? <Volume2 className="w-6 h-6 text-amber-600 animate-pulse" /> : <VolumeX className="w-6 h-6 text-amber-600" />}
@@ -51,13 +47,22 @@ function BackgroundMusic() {
     );
 }
 
-// --- Main App Component (No changes needed here) ---
+// --- Main App Component ---
 export default function App() {
-  // ... (all the existing state and functions in App component remain the same) ...
   const [currentPage, setCurrentPage] = useState('menu');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [correctAnswersTotal, setCorrectAnswersTotal] = useState(0); 
   const [coloringPageData, setColoringPageData] = useState(null);
+  const [unlockedStickers, setUnlockedStickers] = useState(() => {
+    // Load saved stickers from localStorage when the app starts
+    const savedStickers = localStorage.getItem('my-stickers');
+    return savedStickers ? JSON.parse(savedStickers) : [];
+  });
+
+  // Save stickers to localStorage whenever the collection changes
+  useEffect(() => {
+    localStorage.setItem('my-stickers', JSON.stringify(unlockedStickers));
+  }, [unlockedStickers]);
 
   const handleSelectCategory = (category) => {
     setSelectedCategory(category);
@@ -68,10 +73,21 @@ export default function App() {
     const newTotal = correctAnswersTotal + correctCountInSession;
 
     if (newTotal >= REWARD_THRESHOLD) {
-      setCorrectAnswersTotal(newTotal); 
+      // Find stickers the user doesn't have yet
+      const newStickersToAward = allStickers.filter(
+        sticker => !unlockedStickers.find(unlocked => unlocked.id === sticker.id)
+      );
+      
+      // Shuffle and pick 2 new stickers to award
+      const shuffledNewStickers = newStickersToAward.sort(() => 0.5 - Math.random());
+      const selectedStickers = shuffledNewStickers.slice(0, 2);
+      setUnlockedStickers(prev => [...prev, ...selectedStickers]);
+      
+      // Give the coloring page reward
       const randomIndex = Math.floor(Math.random() * coloringPages.length);
       setColoringPageData(coloringPages[randomIndex]);
       setCurrentPage('coloring');
+      
       setCorrectAnswersTotal(0); 
     } else {
       setCorrectAnswersTotal(newTotal);
@@ -83,6 +99,10 @@ export default function App() {
     setCurrentPage('menu');
     setSelectedCategory(null);
   };
+  
+  const navigateToStickerBook = () => {
+      setCurrentPage('stickerBook');
+  };
 
   const PageToRender = () => {
     switch (currentPage) {
@@ -93,9 +113,11 @@ export default function App() {
           const PageComponent = coloringPageData.component;
           return <ColoringPage onExit={navigateHome} PageSVG={PageComponent} initialFills={coloringPageData.initialFills} />;
         }
-        return <MainMenu onSelectCategory={handleSelectCategory} correctAnswersCount={correctAnswersTotal} />;
+        return <MainMenu onSelectCategory={handleSelectCategory} onNavigateToStickerBook={navigateToStickerBook} correctAnswersCount={correctAnswersTotal} />;
+      case 'stickerBook':
+        return <StickerBook unlockedStickers={unlockedStickers} onExit={navigateHome} />;
       default:
-        return <MainMenu onSelectCategory={handleSelectCategory} correctAnswersCount={correctAnswersTotal} />;
+        return <MainMenu onSelectCategory={handleSelectCategory} onNavigateToStickerBook={navigateToStickerBook} correctAnswersCount={correctAnswersTotal} />;
     }
   };
 
@@ -109,16 +131,15 @@ export default function App() {
   );
 }
 
-// --- Menu Component (No changes needed here) ---
-function MainMenu({ onSelectCategory, correctAnswersCount }) {
-  // ... (This component is perfect as is) ...
+// --- Menu Component ---
+function MainMenu({ onSelectCategory, onNavigateToStickerBook, correctAnswersCount }) {
   return (
     <div className="text-center animate-fade-in">
       <div className="flex justify-center items-center mb-4">
         <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500" />
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold ml-4 text-amber-900">Fun Learning Games!</h1>
       </div>
-      <p className="text-slate-600 mb-6 text-base sm:text-lg">Collect stars to win a coloring surprise!</p>
+      <p className="text-slate-600 mb-6 text-base sm:text-lg">Collect stars to win prizes!</p>
       
       {correctAnswersCount > 0 && (
           <div className="mb-6 p-4 bg-yellow-100 border-2 border-dashed border-yellow-400 rounded-lg max-w-md mx-auto animate-fade-in">
@@ -134,9 +155,10 @@ function MainMenu({ onSelectCategory, correctAnswersCount }) {
 
       <div className="mb-8 p-4 bg-amber-50 border-2 border-dashed border-amber-300 rounded-lg max-w-md mx-auto">
         <p className="font-semibold text-lg sm:text-xl text-amber-800">Your Goal</p>
-        <p className="text-sm sm:text-base text-slate-500 mt-1">Collect <strong>{REWARD_THRESHOLD} stars</strong> to unlock a coloring surprise!</p>
+        <p className="text-sm sm:text-base text-slate-500 mt-1">Collect <strong>{REWARD_THRESHOLD} stars</strong> to unlock a coloring surprise and new stickers!</p>
       </div>
 
+      <h2 className="text-2xl font-bold text-amber-800 mb-4">Quiz Games</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {categories.map((category) => (
           <button
@@ -148,12 +170,23 @@ function MainMenu({ onSelectCategory, correctAnswersCount }) {
           </button>
         ))}
       </div>
+      
+      <div className="mt-8 pt-6 border-t-2 border-dashed border-amber-200">
+        <h2 className="text-2xl font-bold text-amber-800 mb-4">My Collection</h2>
+         <button
+            onClick={onNavigateToStickerBook}
+            className="p-4 w-full max-w-xs mx-auto flex items-center justify-center bg-orange-500 text-white rounded-xl shadow-md hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-transform transform hover:scale-105"
+          >
+            <BookOpen className="mr-3 w-7 h-7" />
+            <span className="font-bold text-xl text-center">Sticker Book</span>
+          </button>
+      </div>
     </div>
   );
 }
 
 
-// --- Quiz Component (UPDATED with "Read to Me" button) ---
+// --- Quiz Component ---
 function Quiz({ category, onQuizComplete, onExit }) {
   const questions = useMemo(() => getQuizQuestions(category, QUESTIONS_PER_QUIZ), [category]);
 
@@ -242,7 +275,6 @@ function Quiz({ category, onQuizComplete, onExit }) {
         </div>
       </div>
        
-      {/* --- CHANGED: Question now has a "Read to Me" button --- */}
       <div className="flex items-center justify-between mb-4">
         <p className="text-lg md:text-2xl font-semibold text-slate-800">{currentQuestion.question}</p>
         <button onClick={() => speak(currentQuestion.question)} className="p-2 rounded-full hover:bg-sky-100 transition">
@@ -278,7 +310,6 @@ function Quiz({ category, onQuizComplete, onExit }) {
             <p className="text-2xl font-bold text-red-600 flex items-center justify-center"><XCircle className="mr-2"/> Oops! The answer is {currentQuestion.answer}</p>
           }
           
-          {/* --- CHANGED: Explanation now has a "Read to Me" button --- */}
           <div className="mt-4 p-4 bg-sky-100 border-l-4 border-sky-500 text-sky-800 rounded-lg text-left max-w-2xl mx-auto">
             <div className="flex justify-between items-start">
               <div>
@@ -354,6 +385,53 @@ function ColoringPage({ onExit, PageSVG, initialFills }) {
                 <Sparkles className="ml-2 w-5 h-5" />
             </button>
        </div>
+    </div>
+  );
+}
+
+// --- Sticker Book Component ---
+function StickerBook({ unlockedStickers, onExit }) {
+  const hasStickers = unlockedStickers && unlockedStickers.length > 0;
+
+  return (
+    <div className="text-center animate-fade-in">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <BookOpen className="w-8 h-8 text-orange-500" />
+          <h1 className="text-2xl md:text-3xl font-bold ml-3 text-orange-800">My Sticker Book</h1>
+        </div>
+        <button onClick={onExit} className="p-2 rounded-full hover:bg-orange-100 transition">
+          <Home className="w-6 h-6 text-orange-600"/>
+        </button>
+      </div>
+
+      <p className="text-slate-600 mb-6">Here are all the amazing stickers you've collected. Keep playing to earn more!</p>
+
+      <div className="p-4 bg-amber-50 border-2 border-dashed border-amber-300 rounded-lg min-h-[300px]">
+        {hasStickers ? (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+            {unlockedStickers.map(sticker => (
+              <div key={sticker.id} className="p-2 bg-white rounded-lg shadow-sm flex flex-col items-center animate-fade-in">
+                <img src={sticker.image} alt={sticker.name} className="w-20 h-20 object-contain" />
+                <p className="text-xs mt-2 font-semibold text-slate-700">{sticker.name}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full pt-10">
+            <Star className="w-16 h-16 text-slate-300 mb-4" />
+            <p className="font-bold text-slate-500">Your sticker book is empty!</p>
+            <p className="text-sm text-slate-400">Play some quizzes to earn your first sticker.</p>
+          </div>
+        )}
+      </div>
+      
+       <button 
+          onClick={onExit} 
+          className="mt-6 bg-teal-500 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-teal-600 transition-all transform hover:scale-105 flex items-center mx-auto"
+      >
+          Find More Games
+      </button>
     </div>
   );
 }
