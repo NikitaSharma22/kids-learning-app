@@ -1,11 +1,11 @@
-import React, { useState, useMemo} from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Confetti from 'react-confetti';
 import { Sparkles, Star, Palette, Home, CheckCircle, XCircle, ArrowRight, Volume2, VolumeX } from 'lucide-react';
 import { quizData, getQuizQuestions } from './quizData';
-import { coloringPages} from './coloringPages';
+import { coloringPages, BLANK_COLOR } from './coloringPages';
 import useSound from 'use-sound';
 
-// Sound file URLs (You can change these anytime!)
+// Assuming you have local sound files in 'src/sounds/'
 import correctSound from './sounds/correct.mp3';
 import wrongSound from './sounds/wrong.mp3';
 import winSound from './sounds/win.mp3';
@@ -272,34 +272,32 @@ function Quiz({ category, onQuizComplete, onExit }) {
 }
 
 
-// --- Coloring Page Component (UPDATED with new colors and button) ---
+// --- Coloring Page Component ---
 function ColoringPage({ onExit, PageSVG, initialFills }) {
-  // --- CHANGED: Expanded color palette to 20 colors ---
+  // --- CHANGED: Updated color palette as requested ---
   const colors = [
-    // Rainbow Colors
-    '#FF0000', // Red
-    '#FFA500', // Orange
-    '#FFFF00', // Yellow
-    '#008000', // Green
-    '#0000FF', // Blue
-    '#4B0082', // Indigo
-    '#EE82EE', // Violet
-    // Other Fun Colors
-    '#FFC0CB', // Pink
-    '#A52A2A', // Brown
-    '#000000', // Black
-    '#FFFFFF', // White
-    '#808080', // Gray
-    '#87CEEB', // Sky Blue
-    '#32CD32', // Lime Green
-    '#9400D3', // Dark Violet
-    '#008080', // Teal
-    '#FFD700', // Gold
-    '#FF4500', // OrangeRed
-    '#2F4F4F', // Dark Slate Gray
+    '#FF3B30', // Red
+    '#FF9500', // Orange
+    '#FFCC00', // Yellow
+    '#34C759', // Green
+    '#007AFF', // Blue
+    '#5856D6', // Indigo
+    '#AF52DE', // Violet
+    '#FF2D55', // Pink
+    '#5AC8FA', // Light Blue
+    '#B5E61D', // Lime Green
     '#40E0D0', // Turquoise
+    '#FFDAB9', // Peach
+    '#98FF98', // Mint
+    '#FF7F50', // Coral
+    '#E6E6FA', // Lavender
+    '#FFD700', // Sunflower (same as gold, but good to have)
+    '#00FFFF', // Aqua
+    '#FFB6C1', // Baby Pink
+    '#E0E0E0', // Soft Gray
+    '#000000', // Black
   ];
-  const [selectedColor, setSelectedColor] = useState('#87CEEB');
+  const [selectedColor, setSelectedColor] = useState('#5AC8FA'); // Default to Light Blue
   const [fills, setFills] = useState(initialFills);
 
   const handlePathClick = (pathId) => {
@@ -313,7 +311,6 @@ function ColoringPage({ onExit, PageSVG, initialFills }) {
           <Palette className="w-8 h-8 text-pink-500" />
           <h1 className="text-2xl md:text-3xl font-bold ml-3 text-pink-800">Coloring Surprise!</h1>
         </div>
-        {/* The little home button is still here if they want it! */}
         <button onClick={onExit} className="p-2 rounded-full hover:bg-pink-100 transition">
           <Home className="w-6 h-6 text-pink-600"/>
         </button>
@@ -335,7 +332,6 @@ function ColoringPage({ onExit, PageSVG, initialFills }) {
             <button onClick={() => setFills(initialFills)} className="bg-slate-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-slate-700 transition-colors">
                 Reset Painting
             </button>
-            {/* --- NEW: "Next Challenge" Button --- */}
             <button 
                 onClick={onExit} 
                 className="bg-teal-500 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-teal-600 transition-all transform hover:scale-105 flex items-center"
