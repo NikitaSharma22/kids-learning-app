@@ -1,23 +1,23 @@
 export const allStickers = [
   // Animals
-  { id: 's1', name: 'Lion', image: 'https://cdn.freepik.com/uploads/2023/05/cute-cartoon-lion.png', category: 'Animals' },
-  { id: 's2', name: 'Panda', image: 'https://cdn.freepik.com/uploads/2022/08/cute-panda-sticker.png', category: 'Animals' },
-  { id: 's3', name: 'Elephant', image: 'https://cdn.freepik.com/uploads/2021/11/cute-elephant-cartoon.png', category: 'Animals' },
-  { id: 's4', name: 'Monkey', image: 'https://cdn.freepik.com/uploads/2020/12/cute-monkey-cartoon.png', category: 'Animals' },
-  { id: 's5', name: 'Koala', image: 'https://cdn.freepik.com/uploads/2021/09/cute-koala-cartoon.png', category: 'Animals' },
+  { id: 's1',  name: 'Lion',     image: 'https://www.rawpixel.com/image/6431169/png-sticker-public-domain', category: 'Animals' },
+  { id: 's2',  name: 'Panda',    image: 'https://www.rawpixel.com/image/6483614/png-sticker-public-domain', category: 'Animals' },
+  { id: 's3',  name: 'Elephant', image: 'https://www.rawpixel.com/image/9189513/png-people-cartoon', category: 'Animals' },
+  { id: 's4',  name: 'Monkey',   image: 'https://www.rawpixel.com/image/9823023/png-art-sticker', category: 'Animals' },
+  { id: 's5',  name: 'Koala',    image: 'https://www.rawpixel.com/image/6431025/png-flower-sticker', category: 'Animals' },
 
   // Space
-  { id: 's6', name: 'Rocket', image: 'https://cdn.freepik.com/uploads/2022/02/cute-rocket-cartoon.png', category: 'Space' },
-  { id: 's7', name: 'Earth', image: 'https://cdn.freepik.com/uploads/2022/03/cute-earth-cartoon.png', category: 'Space' },
-  { id: 's8', name: 'Saturn', image: 'https://cdn.freepik.com/uploads/2021/10/cute-saturn-cartoon.png', category: 'Space' },
-  { id: 's9', name: 'Astronaut', image: 'https://cdn.freepik.com/uploads/2020/10/cute-astronaut-cartoon.png', category: 'Space' },
+  { id: 's6',  name: 'Rocket',   image: 'https://www.rawpixel.com/image/9268240/rocket-png-illustration-transparent-background', category: 'Space' },
+  { id: 's7',  name: 'Earth',    image: 'https://www.rawpixel.com/image/17916276/vector-png-heart-cartoon', category: 'Space' },
+  { id: 's8',  name: 'Saturn',   image: 'https://www.rawpixel.com/image/7554312/png-people-space', category: 'Space' },
+  { id: 's9',  name: 'Astronaut',image: 'https://www.rawpixel.com/image/9268023/rocket-png-illustration-transparent-background', category: 'Space' },
 
   // Food
-  { id: 's10', name: 'Pizza', image: 'https://cdn.freepik.com/uploads/2022/05/cute-pizza-cartoon.png', category: 'Food' },
-  { id: 's11', name: 'Ice Cream', image: 'https://cdn.freepik.com/uploads/2021/06/cute-ice-cream-cartoon.png', category: 'Food' },
-  { id: 's12', name: 'Apple', image: 'https://cdn.freepik.com/uploads/2022/01/cute-apple-cartoon.png', category: 'Food' },
+  { id: 's10', name: 'Pizza',    image: 'https://www.rawpixel.com/image/17916276/vector-png-heart-cartoon', category: 'Food' },
+  { id: 's11', name: 'Ice Cream',image: 'https://www.rawpixel.com/image/17916276/vector-png-heart-cartoon', category: 'Food' },
+  { id: 's12', name: 'Apple',    image: 'https://www.rawpixel.com/image/17916276/vector-png-heart-cartoon', category: 'Food' },
 
   // Mythology
-  { id: 's13', name: 'Ganesha', image: 'https://cdn.freepik.com/uploads/2023/01/cute-ganesha-cartoon.png', category: 'Mythology' },
-  { id: 's14', name: 'Hanuman', image: 'https://cdn.freepik.com/uploads/2023/02/cute-hanuman-cartoon.png', category: 'Mythology' },
+  { id: 's13', name: 'Ganesha',  image: 'https://your‑own‑cdn.example.com/ganesha.png', category: 'Mythology' },
+  { id: 's14', name: 'Hanuman',  image: 'https://your‑own‑cdn.example.com/hanuman.png', category: 'Mythology' },
 ];
