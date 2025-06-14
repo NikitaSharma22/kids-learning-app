@@ -1,11 +1,12 @@
-import React, { useState, useMemo} from 'react';
+import React, { useState, useMemo, useEffect } from 'react'; // --- CHANGED: Added useEffect
 import Confetti from 'react-confetti';
-import { Sparkles, Star, Palette, Home, CheckCircle, XCircle, ArrowRight, Volume2, VolumeX } from 'lucide-react';
+// --- CHANGED: Added Clock icon ---
+import { Sparkles, Star, Palette, Home, CheckCircle, XCircle, ArrowRight, Volume2, VolumeX, Clock } from 'lucide-react';
 import { quizData, getQuizQuestions } from './quizData';
-import { coloringPages} from './coloringPages';
+import { coloringPages } from './coloringPages';
 import useSound from 'use-sound';
 
-// Assuming you have local sound files in 'src/sounds/'
+// Sound file URLs (or local imports)
 import correctSound from './sounds/correct.mp3';
 import wrongSound from './sounds/wrong.mp3';
 import winSound from './sounds/win.mp3';
@@ -15,6 +16,7 @@ import backgroundMusic from './sounds/music.mp3';
 const categories = Object.keys(quizData);
 const REWARD_THRESHOLD = 5;
 const QUESTIONS_PER_QUIZ = 5;
+const QUIZ_DURATION_SECONDS = 150; // 2 minutes and 30 seconds
 
 
 // --- Background Music Component ---
@@ -148,7 +150,7 @@ function MainMenu({ onSelectCategory, correctAnswersCount }) {
 }
 
 
-// --- Quiz Component ---
+// --- Quiz Component (UPDATED with Timer)---
 function Quiz({ category, onQuizComplete, onExit }) {
   const questions = useMemo(() => getQuizQuestions(category, QUESTIONS_PER_QUIZ), [category]);
 
@@ -161,16 +163,37 @@ function Quiz({ category, onQuizComplete, onExit }) {
   const [feedback, setFeedback] = useState(null);
   const [correctInSession, setCorrectInSession] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
+  
+  // --- NEW: State for the timer ---
+  const [timeLeft, setTimeLeft] = useState(QUIZ_DURATION_SECONDS);
+
+  // --- NEW: useEffect to handle the countdown timer ---
+  useEffect(() => {
+    // If time is up or quiz is showing feedback, don't run the timer
+    if (timeLeft === 0 || feedback) return;
+
+    // Set up the interval
+    const intervalId = setInterval(() => {
+      setTimeLeft(prevTime => prevTime - 1);
+    }, 1000);
+
+    // Clean up the interval when the component unmounts or dependencies change
+    return () => clearInterval(intervalId);
+  }, [timeLeft, feedback]); 
+
+  // --- NEW: useEffect to handle when time runs out ---
+  useEffect(() => {
+    if (timeLeft === 0) {
+      onQuizComplete(correctInSession);
+    }
+  }, [timeLeft, onQuizComplete, correctInSession]);
 
   const handleAnswer = (option) => {
     if (feedback) return;
-
     const currentQuestion = questions[currentQuestionIndex];
     const isCorrect = option === currentQuestion.answer;
-    
     setUserAnswers({ ...userAnswers, [currentQuestionIndex]: option });
     setFeedback(isCorrect ? 'correct' : 'incorrect');
-
     if (isCorrect) {
       playCorrectSound();
       setCorrectInSession(prev => prev + 1);
@@ -181,21 +204,24 @@ function Quiz({ category, onQuizComplete, onExit }) {
 
   const handleNextQuestion = () => {
     const isLastQuestion = currentQuestionIndex === questions.length - 1;
-    const finalCorrectCount = correctInSession;
-
     if (isLastQuestion) {
-        if (finalCorrectCount === QUESTIONS_PER_QUIZ) {
-            playWinSound();
-            setShowConfetti(true);
-            setTimeout(() => onQuizComplete(finalCorrectCount), 4000);
-        } else {
-            onQuizComplete(finalCorrectCount);
-        }
+      if (correctInSession === QUESTIONS_PER_QUIZ) {
+        playWinSound();
+        setShowConfetti(true);
+        setTimeout(() => onQuizComplete(correctInSession), 4000);
+      } else {
+        onQuizComplete(correctInSession);
+      }
     } else {
       setFeedback(null);
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
   };
+  
+  // --- NEW: Logic to format time for display ---
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const timerColor = timeLeft <= 15 ? 'text-red-500 animate-pulse' : 'text-slate-600';
 
   if (!questions || questions.length === 0) {
     return <div className="text-center p-10">Loading questions for {category}...</div>;
@@ -214,9 +240,10 @@ function Quiz({ category, onQuizComplete, onExit }) {
       </div>
 
       <div className="flex items-center justify-between bg-slate-100 p-4 rounded-lg mb-4">
-        <div>
-          <p className="text-slate-600">Question {currentQuestionIndex + 1} of {questions.length}</p>
-          <p className="text-lg md:text-2xl font-semibold mt-1 text-slate-800">{currentQuestion.question}</p>
+        {/* --- NEW: Timer Display --- */}
+        <div className={`flex items-center font-bold text-lg ${timerColor}`}>
+            <Clock className="mr-2 w-6 h-6"/>
+            <span>{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</span>
         </div>
         <div className="flex space-x-1">
           {[...Array(QUESTIONS_PER_QUIZ)].map((_, i) => (
@@ -224,6 +251,8 @@ function Quiz({ category, onQuizComplete, onExit }) {
           ))}
         </div>
       </div>
+       
+      <p className="text-lg md:text-2xl font-semibold mb-4 text-slate-800">{currentQuestion.question}</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {currentQuestion.options.map((option) => {
@@ -274,30 +303,11 @@ function Quiz({ category, onQuizComplete, onExit }) {
 
 // --- Coloring Page Component ---
 function ColoringPage({ onExit, PageSVG, initialFills }) {
-  // --- CHANGED: Updated color palette as requested ---
   const colors = [
-    '#FF3B30', // Red
-    '#FF9500', // Orange
-    '#FFCC00', // Yellow
-    '#34C759', // Green
-    '#007AFF', // Blue
-    '#5856D6', // Indigo
-    '#AF52DE', // Violet
-    '#FF2D55', // Pink
-    '#5AC8FA', // Light Blue
-    '#B5E61D', // Lime Green
-    '#40E0D0', // Turquoise
-    '#FFDAB9', // Peach
-    '#98FF98', // Mint
-    '#FF7F50', // Coral
-    '#E6E6FA', // Lavender
-    '#FFD700', // Sunflower (same as gold, but good to have)
-    '#00FFFF', // Aqua
-    '#FFB6C1', // Baby Pink
-    '#E0E0E0', // Soft Gray
-    '#000000', // Black
+    '#FF3B30', '#FF9500', '#FFCC00', '#34C759', '#007AFF', '#5856D6', '#AF52DE', '#FF2D55', '#5AC8FA', '#B5E61D',
+    '#40E0D0', '#FFDAB9', '#98FF98', '#FF7F50', '#E6E6FA', '#FFD700', '#00FFFF', '#FFB6C1', '#E0E0E0', '#000000'
   ];
-  const [selectedColor, setSelectedColor] = useState('#5AC8FA'); // Default to Light Blue
+  const [selectedColor, setSelectedColor] = useState('#5AC8FA');
   const [fills, setFills] = useState(initialFills);
 
   const handlePathClick = (pathId) => {
