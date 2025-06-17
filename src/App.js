@@ -299,8 +299,8 @@ function ColoringPage({ onExit, PageSVG, initialFills }) {
     '#8F00FF', // Violet
     '#4B0082', // Indigo
     '#0000FF', // Blue
-    '#00FF00', // Green
-    '#FFF73B', // Yellow
+    '#80FF7D', // Green
+    '#FFF60A', // Yellow
     '#FF9052', // Orange
     '#FF0000', // Red
 
@@ -316,7 +316,7 @@ function ColoringPage({ onExit, PageSVG, initialFills }) {
 
     // Greens
     '#00A209', // Dark Green
-    '#0A5000', // Olive Green
+    '#768400', // Olive Green
     
     // Neutrals & Browns
     '#A52A2A', // Brown
