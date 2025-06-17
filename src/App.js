@@ -295,8 +295,26 @@ function Quiz({ category, onQuizComplete, onExit }) {
 // Coloring Page Component
 function ColoringPage({ onExit, PageSVG, initialFills }) {
   const colors = [
-    '#FF3B30', '#FF9500', '#FFCC00', '#34C759', '#007AFF', '#5856D6', '#AF52DE', '#FF2D55', '#5AC8FA', '#B5E61D',
-    '#40E0D0', '#FFDAB9', '#98FF98', '#FF7F50', '#E6E6FA', '#FFD700', '#00FFFF', '#FFB6C1', '#E0E0E0', '#000000'
+    '#8F00FF', // Violet
+    '#4B0082', // Indigo
+    '#0000FF', // Blue
+    '#00FF00', // Green
+    '#FDF672', // Yellow 
+    '#FF9052', // Orange
+    '#FF0000', // Red
+    '#FFC0CB', // Pink
+    '#000000', // Black
+    '#FFFFFF', // White
+    '#552200', // Brown
+    '#800080', // Purple
+    '#006400', // Dark Green
+    '#808080', // Grey
+    '#00FFFF', // Cyan
+    '#009BD6', // Turquoise
+    '#CCCCFF', // Periwinkle
+    '#FFD0A2', // Beige
+    '#00C2F9', // Sky Blue
+    '#0A5000', // Olive Green
   ];
   const [selectedColor, setSelectedColor] = useState('#5AC8FA');
   const [fills, setFills] = useState(initialFills);
