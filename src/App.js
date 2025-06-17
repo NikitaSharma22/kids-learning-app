@@ -296,13 +296,13 @@ function Quiz({ category, onQuizComplete, onExit }) {
 function ColoringPage({ onExit, PageSVG, initialFills }) {
   const colors = [
     // Rainbow Colors (ROYGBIV)
-    '#FF0000', // Red
-    '#FF9052', // Orange
-    '#FDF672', // Yellow
-    '#00FF00', // Green
-    '#0000FF', // Blue
-    '#4B0082', // Indigo
     '#8F00FF', // Violet
+    '#4B0082', // Indigo
+    '#0000FF', // Blue
+    '#00FF00', // Green
+    '#FFF73B', // Yellow
+    '#FF9052', // Orange
+    '#FF0000', // Red
 
     // Pinks & Purples
     '#FFC0CB', // Pink
@@ -315,7 +315,7 @@ function ColoringPage({ onExit, PageSVG, initialFills }) {
     '#CCCCFF', // Periwinkle
 
     // Greens
-    '#006400', // Dark Green
+    '#00A209', // Dark Green
     '#0A5000', // Olive Green
     
     // Neutrals & Browns
